@@ -1,6 +1,6 @@
 # AWS EC2 Autoscaling Sample
 
-This is a AWS Cloudformation template defines the basic autoscaling policy
+This AWS Cloudformation template defines the basic autoscaling policy
 with evening and morning scheduled actions. This template can be used as a
 basis point for simple cost efficient development environment which starts
 in the morning and scales in to zero in the evening.
