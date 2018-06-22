@@ -18,6 +18,14 @@ Parameters:
     Description: >-
       Select ssh key from a list which will be used to access ec2 instances over
       ssh
+  StartAt:
+    Type: String
+    Description: When to trigger scale-out event to start instances
+    Default: 0 4 * * *
+  EndAt:
+    Type: String
+    Description: When to trigger scale-in event to terminate all instances
+    Default: 10 14 * * *
 Resources:
   ScalingPolicy:
     Type: 'AWS::AutoScaling::ScalingPolicy'
@@ -76,7 +84,8 @@ Resources:
         Ref: AutoScalingGroup
       DesiredCapacity: 0
       MinSize: 0
-      Recurrence: 10 14 * * *
+      Recurrence:
+        Ref: EndAt
   MorningScheduledAction:
     Type: 'AWS::AutoScaling::ScheduledAction'
     Properties:
@@ -84,4 +93,5 @@ Resources:
         Ref: AutoScalingGroup
       DesiredCapacity: 2
       MinSize: 2
-      Recurrence: 0 4 * * *
+      Recurrence:
+        Ref: StartAt
