@@ -5,7 +5,7 @@ with evening and morning scheduled actions. This template can be used as a
 basis point for simple cost efficient development environment which starts
 in the morning and scales in to zero in the evening.
 
-[![architecture](images/arch.png)]
+![architecture](images/arch.png)
 
 # Launch the stack
 
