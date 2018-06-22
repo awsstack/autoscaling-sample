@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Subnets:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: Subnet list
+  InstanceType:
+    Type: String
+    AllowedValues:
+      - t2.micro
+      - t2.medium
+    Default: t2.micro
+    Description: Enter instance type eg. t2.medium or t2.micro
+  ImageId:
+    Type: 'AWS::EC2::Image::Id'
+    Description: Select image id
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: >-
+      Select ssh key from a list which will be used to access ec2 instances over
+      ssh
+Resources:
+  ScalingPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AutoScalingGroupName:
+        Ref: AutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 90
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier:
+        Ref: Subnets
+      LaunchConfigurationName:
+        Ref: LaunchConfiguration
+      HealthCheckGracePeriod: 10
+      MaxSize: 4
+      MinSize: 2
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 1
+        PauseTime: PT5S
+  LaunchConfiguration:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      ImageId:
+        Ref: ImageId
+      InstanceType:
+        Ref: InstanceType
+      AssociatePublicIpAddress: true
+      KeyName:
+        Ref: KeyName
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow http
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  EveningScheduledAction:
+    Type: 'AWS::AutoScaling::ScheduledAction'
+    Properties:
+      AutoScalingGroupName:
+        Ref: AutoScalingGroup
+      DesiredCapacity: 0
+      MinSize: 0
+      Recurrence: 10 14 * * *
+  MorningScheduledAction:
+    Type: 'AWS::AutoScaling::ScheduledAction'
+    Properties:
+      AutoScalingGroupName:
+        Ref: AutoScalingGroup
+      DesiredCapacity: 2
+      MinSize: 2
+      Recurrence: 0 4 * * *
